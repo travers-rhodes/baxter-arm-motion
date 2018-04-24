@@ -16,12 +16,13 @@ class BaxterCache:
       self.joints_dot = None
 
     def callback(self, mesg):
-      self.joints = np.array([dict(zip(mesg.name,mesg.position))[joint_name] for joint_name in joint_names])
+      tmpdict = dict(zip(mesg.name,range(len(mesg.name))))
+      self.joints = np.array([mesg.position[tmpdict[joint_name]] for joint_name in joint_names])
       alpha = 0.1
       if not self.joints_dot is None:
-        self.joints_dot = self.joints_dot * alpha + (1-alpha) * np.array([dict(zip(mesg.name,mesg.velocity))[joint_name] for joint_name in joint_names])
+        self.joints_dot = self.joints_dot * alpha + (1-alpha) * np.array([mesg.velocity[tmpdict[joint_name]] for joint_name in joint_names])
       else:
-        self.joints_dot = np.array([dict(zip(mesg.name,mesg.velocity))[joint_name] for joint_name in joint_names])
+        self.joints_dot = np.array([mesg.velocity[tmpdict[joint_name]] for joint_name in joint_names])
 
 def main():
     rospy.init_node('pid_control')

@@ -26,8 +26,8 @@ class Ellipse(Model):
         self.b = b
         
     def compute_step(self, p, i):
-        theta = i/(2*np.pi*100)
-        q = np.array([self.a*np.cos(theta), self.b*np.size(theta), 0])
+        theta = i*np.pi*2/100
+        q = np.array([self.a*np.cos(theta), self.b*np.sin(theta), 0])
         return q
 
 class FigureEight(Model):
@@ -36,8 +36,18 @@ class FigureEight(Model):
         self.b = b
         
     def compute_step(self, p, i):
-        theta = i/(2*np.pi*100)
-        q = np.array([self.a*np.cos(2*theta), self.b*np.size(theta), 0])
+        theta = 2*np.pi*i/100
+        q = np.array([self.a*np.cos(2*theta + np.pi/2), self.b*np.sin(theta), 0])
+        return q
+
+class Snake(Model):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+        
+    def compute_step(self, p, i):
+        theta = 2*np.pi*i/50
+        q = np.array([self.a*np.cos(4*theta), self.b*np.sin(theta), 0])
         return q
 
 

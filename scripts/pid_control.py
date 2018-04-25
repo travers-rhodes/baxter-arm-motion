@@ -40,7 +40,6 @@ class StateLogger:
     def log(self, data):
       self.writer.writerow(data)
 
-def run_experiment(Kp, Kd, Ki):
 
 def main():
     rospy.init_node('pid_control')

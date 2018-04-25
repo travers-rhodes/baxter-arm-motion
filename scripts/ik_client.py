@@ -20,6 +20,17 @@ from baxter_core_msgs.srv import (
     SolvePositionIK,
     SolvePositionIKRequest,
 )
+'''
+ position: 
+    x: 0.406484166471
+    y: -0.363021194299
+    z: 0.11514337617
+  orientation: 
+    x: -0.0674629532155
+    y: 0.996194308015
+    z: 0.045673634235
+    w: 0.030976922984
+'''
 
 
 # limb should be "left" or "right"
@@ -66,7 +77,7 @@ def ik(limb, position):
                     ikreq.SEED_NS_MAP: 'Nullspace Setpoints',
                    }.get(resp_seeds[0], 'None')
         limb_joints = resp.joints[0].position
-        return limb_joints
+        return (limb_joints, resp.joints[0].name)
     else:
         print("INVALID POSE - No Valid Joint Solution Found.")
 

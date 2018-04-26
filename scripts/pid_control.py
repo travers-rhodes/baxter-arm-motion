@@ -8,7 +8,7 @@ import math
 
 from baxter_core_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
-from geometry_msgs.msg import Point
+from baxter_arm_motion.msg import Tracking
 import baxter_tools
 
 joint_names = [ 'right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'right_w1', 'right_w2']
@@ -16,7 +16,7 @@ joint_names = [ 'right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'rig
 class BaxterCache:
     def __init__(self):
       self.listener = rospy.Subscriber("/robot/joint_states", JointState, self.curstate_callback)
-      self.desListener = rospy.Subscriber("/follow/target_point", Point, self.desired_callback)
+      self.desListener = rospy.Subscriber("/follow/target_point", Tracking, self.desired_callback)
       self.joints = None
       self.joints_dot = None
       self.desired_joints = [1.27783743020085, 1.940743404428984, -1.4335451199369675, -0.3248315839206377, 2.0553848590877415, -1.0419260900570144, -2.649420877958835]
@@ -31,7 +31,8 @@ class BaxterCache:
         self.joints_dot = np.array([mesg.velocity[tmpdict[joint_name]] for joint_name in joint_names])
 
     def desired_callback(self, mesg):
-      pos = [0.342583, -0.70819, 0.036003]
+      pos = [mesg.current.x, mesg.current.y, mesg.current.z]
+      print(pos)
       ik_resp = ik_client.ik("right",pos)
       ik_resp_joints = ik_resp[0]
       ik_resp_names = ik_resp[1]
@@ -41,18 +42,24 @@ class BaxterCache:
 
 class StateLogger:
     def __init__(self, logFileName):
-      self.logFile = open(logFileName, 'w')
-      self.writer = csv.writer(self.logFile)
+      self.mock = True
+      if not self.mock:
+        self.logFile = open(logFileName, 'w')
+        self.writer = csv.writer(self.logFile)
 
     def __enter__(self):
       return self
    
     def __exit__(self, exc_typ, exc_value, traceback):
       print("closing log file")
-      self.logFile.close()
+      if not self.mock:
+        self.logFile.close()
  
     def log(self, data):
-      self.writer.writerow(data)
+      if not self.mock:
+        self.writer.writerow(data)
+      else:
+        print(data)
 
 def runExperiment(Kp, Kd, Ki, commandHz):
     bc = BaxterCache()
@@ -82,7 +89,7 @@ def runExperiment(Kp, Kd, Ki, commandHz):
     print("logging to %s" % fileName)
     with StateLogger(fileName) as logger:
       it = 0
-      maxIt = 20*commandHz
+      maxIt = 2000*commandHz
       while not rospy.is_shutdown() and it < maxIt:
         # compute the current joint angles
         err = bc.joints - bc.desired_joints 

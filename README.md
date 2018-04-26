@@ -11,7 +11,12 @@ Links:
 sudo apt-get install python-pip python-dev build-essential gfortran libblas-dev liblapack-dev
 sudo pip install --upgrade pip
 sudo pip install --upgrade virtualenv
+#for pyramid-arima
 sudo pip install pyramid-arima
+#for prophet
+sudo pip install pystan
+sudo pip install fbprophet
+
 
 ```
 

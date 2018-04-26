@@ -24,9 +24,13 @@ def generateMessage(secondsSinceStart):
 def circle_path(secondsSinceStart):
   center = np.array([0.656982770038,
                     -0.852598021641,
-                    0.0388609422173])
-  omg = 0.1
-  radius = 0
+                    0.1388609422173])
+  center = np.array([ 0.672040974663,
+                     -0.724013073822,
+                      0.0569658745728])
+
+  omg = 1
+  radius = 0.1
   point = center + radius * np.array([0,np.sin(omg * secondsSinceStart), np.cos(omg * secondsSinceStart)])
   return point
 

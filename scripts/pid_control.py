@@ -19,7 +19,7 @@ class BaxterCache:
       self.desListener = rospy.Subscriber("/follow/target_point", Tracking, self.desired_callback)
       self.joints = None
       self.joints_dot = None
-      self.desired_joints = [1.27783743020085, 1.940743404428984, -1.4335451199369675, -0.3248315839206377, 2.0553848590877415, -1.0419260900570144, -2.649420877958835]
+      self.desired_joints = None 
 
     def curstate_callback(self, mesg):
       tmpdict = dict(zip(mesg.name,range(len(mesg.name))))
@@ -83,6 +83,11 @@ def runExperiment(Kp, Kd, Ki, commandHz):
     while bc.joints is None:
       rate.sleep()
     print("First joint_state message acquired")
+    
+    print("Waiting for first target_loc message")
+    while bc.desired_joints is None:
+      rate.sleep()
+    print("First target_loc message acquired")
     
     cumulativeJointError = np.zeros(bc.joints.shape)
     fileName = "results/logKp%fKd%fKi%fHz%d.csv" % (Kp, Kd, Ki, commandHz)

@@ -22,9 +22,12 @@ def generateMessage(secondsSinceStart):
   return msg
 
 def circle_path(secondsSinceStart):
-  center = np.array([0.1, -0.7, 0.3])
+  center = np.array([0.656982770038,
+                    -0.852598021641,
+                    0.0388609422173])
   omg = 0.1
-  point = center + 0 * np.array([0,np.sin(omg * secondsSinceStart), np.cos(omg * secondsSinceStart)])
+  radius = 0
+  point = center + radius * np.array([0,np.sin(omg * secondsSinceStart), np.cos(omg * secondsSinceStart)])
   return point
 
 class TargetGeneration:

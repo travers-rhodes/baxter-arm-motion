@@ -50,10 +50,10 @@ def ik(limb, position):
                     z=position[2],
                 ),
                 orientation=Quaternion(
-                    x=1.0,
-                    y=0.0,
-                    z=0.0,
-                    w=0.0
+                    x=0.367048116303,
+                    y=0.885911751787,
+                    z=-0.108908281936,
+                    w=0.261868353356
                 ),
             ),
         )

@@ -14,12 +14,12 @@ import baxter_tools
 
 joint_names = [ 'right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'right_w1', 'right_w2']
 Kp = 7
-Kd = 0
+Kd = 0.5
 Ki = 5
 
 class BaxterCache:
     def __init__(self):
-      self.trackFuture = False#True#False
+      self.trackFuture = False
       self.listener = rospy.Subscriber("/robot/joint_states", JointState, self.curstate_callback)
       self.desListener = rospy.Subscriber("/follow/target_point", Tracking, self.desired_callback)
       self.truthListener = rospy.Subscriber("/follow/truth", Marker, self.truth_callback)

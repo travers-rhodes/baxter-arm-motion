@@ -11,6 +11,16 @@ class Model(object):
             p = self.compute_step(p, i)
             data[i, :] = p + np.random.normal(0, 0.05, size=(1, 3))
         return data
+    def generator(self):
+        p = np.array([0.0, 0.0, 0.0])
+        try:
+            i=0
+            while True:
+                p = self.compute_step(p, i)
+                yield p + np.random.normal(0, 0.05, size=(1, 3))
+        except:
+            yield p
+            print('Generator exited')
 
 class LinearModel(Model):
     def __init__(self, direction):

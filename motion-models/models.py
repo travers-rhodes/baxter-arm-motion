@@ -5,9 +5,10 @@ class Model(object):
     origin = np.array([0.6720409, -0.72401, 0.0569])
     def get_position(self, time):
         print('ERROR UNIMPLEMENTED')
-    def generate_data(self, tFinal, nSamples):
+    def generate_data(self, tFinal, sampleRate):
         p = np.array([0, 0, 0])
         data = np.zeros((nSamples, 3))
+        nSamples = tFinal*sampleRate
         for i in range(nSamples):
             time = float(i)*tFinal/float(nSamples)
             p = self.get_position(time)

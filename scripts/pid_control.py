@@ -19,7 +19,7 @@ Ki = 5
 
 class BaxterCache:
     def __init__(self):
-      self.trackFuture = False
+      self.trackFuture = True#False
       self.listener = rospy.Subscriber("/robot/joint_states", JointState, self.curstate_callback)
       self.desListener = rospy.Subscriber("/follow/target_point", Tracking, self.desired_callback)
       self.truthListener = rospy.Subscriber("/follow/truth", Marker, self.truth_callback)
@@ -166,7 +166,7 @@ def runExperiment(Kp, Kd, Ki, commandHz):
         err_dot = bc.joints_dot - desired_dot
         # log at 40 hz
         if it % int(max(1,math.floor(commandHz/40))) == 0:
-          logger.log([rospy.get_rostime()] + bc.end_eff_state + bc.truth)
+          logger.log([it, rospy.get_rostime().to_sec()] + bc.end_eff_state + bc.truth)
         it += 1
         torques = compute_torque(err, err_dot, cumulativeJointError, Kp, Kd, Ki)
         messageObj.command = [float(torque) for torque in torques.tolist()]

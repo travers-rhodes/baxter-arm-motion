@@ -1,21 +1,20 @@
-#!/usr/bin/python
-import rospy
-import numpy as np
-import ik_client
-import time
-import csv
-import math
-
-from baxter_core_msgs.msg import JointCommand, EndpointState
-from sensor_msgs.msg import JointState
-from baxter_arm_motion.msg import Tracking
+#!/usr/bin/python 
+import rospy 
+import numpy as np 
+import ik_client 
+import time 
+import csv 
+import math 
+from baxter_core_msgs.msg import JointCommand, EndpointState 
+from sensor_msgs.msg import JointState 
+from baxter_arm_motion.msg import Tracking 
 from visualization_msgs.msg import Marker
 import baxter_tools
 
 joint_names = [ 'right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'right_w1', 'right_w2']
 Kp = 7
-Kd = 0.5
-Ki = 5
+Kd = 0.2
+Ki = 4
 
 class BaxterCache:
     def __init__(self):
@@ -48,45 +47,39 @@ class BaxterCache:
       self.desired_pos = np.array([mesg.current.x, mesg.current.y, mesg.current.z])
       self.desired_pos_next = np.array([mesg.future.x, mesg.future.y, mesg.future.z])
       self.desired_time = mesg.curTime
+      if self.trackFuture:
+        start_joints = self.get_ordered_joints(self.desired_pos)
+        if (start_joints is None):
+          return None
+        future_joints = self.get_ordered_joints(self.desired_pos_next)
+        if (future_joints is None):
+          return None
+        self.desired_dot = future_joints - start_joints
+      else:
+        self.desired_dot = np.zeros(7) #- start_joints
 
     def get_interp_pos(self):
       curtime = rospy.get_rostime()
       # time stamp is 1 second off, so divide by 1 here ellipsized
       pos = self.desired_pos + (curtime - self.desired_time).to_sec() * (self.desired_pos_next - self.desired_pos)
-      print(pos)
-      print(self.desired_pos)
+      #print(pos)
+      #print(self.desired_pos)
       return pos
 
     def get_desired_joints_and_vel(self):
       if self.desired_pos is None:
         return None
       if self.trackFuture:
-        start_joints = self.get_ordered_joints(self.desired_pos)
-        if (start_joints is None and self.last_desired_joints is not None):
-          return (self.last_desired_joints, self.last_desired_dot)
-        elif (start_joints is None):
-          return None
-        future_joints = self.get_ordered_joints(self.desired_pos_next)
-        if (future_joints is None and self.last_desired_joints is not None):
-          return (self.last_desired_joints, self.last_desired_dot)
-        elif (future_joints is None):
-          return None
         interp_pos = self.get_interp_pos()
-        #print(interp_pos)
         desired_joints = self.get_ordered_joints(interp_pos)
-        # it turns out this linearization is not a good estimate
-        # of desired velocity, so instead we go with zero here
-        desired_dot = np.zeros(future_joints.shape) #- start_joints
       else: 
         desired_joints = self.get_ordered_joints(self.desired_pos)
-        if (desired_joints is None and self.last_desired_joints is not None):
-          return (self.last_desired_joints, self.last_desired_dot)
-        elif (desired_joints is None):
-          return None
-        desired_dot = np.zeros(desired_joints.shape) 
+      if (desired_joints is None and self.last_desired_joints is not None):
+        return (self.last_desired_joints, self.desired_dot)
+      elif (desired_joints is None):
+        return None
       self.last_desired_joints = desired_joints
-      self.last_desired_dot = desired_dot
-      return (desired_joints, desired_dot)
+      return (desired_joints, self.desired_dot)
 
     def get_ordered_joints(self, pos):
       ik_resp = ik_client.ik("right",pos)
@@ -128,7 +121,7 @@ def runExperiment(Kp, Kd, Ki, commandHz):
     rospy.sleep(1)
 
     controlTopic = "/robot/limb/right/joint_command"
-    pub = rospy.Publisher(controlTopic, JointCommand)
+    pub = rospy.Publisher(controlTopic, JointCommand, queue_size=20)
     messageObj = JointCommand()
     messageObj.mode = JointCommand.TORQUE_MODE
     messageObj.names = joint_names
@@ -166,6 +159,7 @@ def runExperiment(Kp, Kd, Ki, commandHz):
         err_dot = bc.joints_dot - desired_dot
         # log at 40 hz
         if it % int(max(1,math.floor(commandHz/40))) == 0:
+          print(it)
           logger.log([it, rospy.get_rostime().to_sec()] + bc.end_eff_state + bc.truth)
         it += 1
         torques = compute_torque(err, err_dot, cumulativeJointError, Kp, Kd, Ki)

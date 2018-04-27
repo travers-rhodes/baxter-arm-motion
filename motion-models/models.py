@@ -7,8 +7,8 @@ class Model(object):
         print('ERROR UNIMPLEMENTED')
     def generate_data(self, tFinal, sampleRate):
         p = np.array([0, 0, 0])
-        data = np.zeros((nSamples, 3))
         nSamples = tFinal*sampleRate
+        data = np.zeros((nSamples, 3))        
         for i in range(nSamples):
             time = float(i)*tFinal/float(nSamples)
             p = self.get_position(time)

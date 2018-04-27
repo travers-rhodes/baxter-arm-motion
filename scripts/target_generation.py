@@ -30,7 +30,7 @@ def generateFullTrajMsg():
   mesg.id = 0;
   mesg.scale.x = 0.05 # = Vector3(1.0, 0, 0)
   mesg.color = ColorRGBA(0.0, 0.0, 1.0, 0.5)
-  mesg.points = [circle_path_point(t) for t in np.linspace(0,np.pi * 2)]
+  mesg.points = [circle_path_point(t) for t in np.linspace(0,np.pi * 8.01)]
   mesg.header.frame_id = 'torso'
   return mesg 
 
@@ -49,39 +49,42 @@ def circle_path_point(secondsSinceStart):
   return Point(vec[0], vec[1], vec[2])
 
 def circle_path(secondsSinceStart):
-  center = np.array([ 0.672040974663,
+  center = np.array([ 0.772040974663,
                      -0.724013073822,
                       0.0569658745728])
 
-  omg = 0.5
+  omg = 0.25
   radius = 0.1
   point = center + radius * np.array([0,np.sin(omg * secondsSinceStart), np.cos(omg * secondsSinceStart)])
   return point
 
 class TargetGeneration:
   def __init__(self):
-    # publish at 100 Hz
-    self.freq = 2
+    # publish at 1 Hz
+    self.freq = 1
     self.publisher = rospy.Publisher("/follow/target_point", Tracking, queue_size = 10)
     self.trajpublisher = rospy.Publisher("/follow/full_traj", Marker, queue_size = 10)
     self.targpublisher= rospy.Publisher("/follow/target_mark", Marker, queue_size = 10)
     self.truthpublisher= rospy.Publisher("/follow/truth", Marker, queue_size = 10)
     rate = rospy.Rate(self.freq)
-    self.starttime = rospy.get_time()
+    self.starttime = rospy.get_rostime()
+    while self.starttime.secs == 0:
+      self.starttime = rospy.get_rostime()
+    print self.starttime
     print("sending targeting messages")
     rospy.Timer(rospy.Duration(1.0/self.freq), self.slowCallback)
     rospy.Timer(rospy.Duration(1.0/200), self.fastCallback)
 
   def slowCallback(self,event):
-      msg = generateMessage(rospy.get_time() - self.starttime)
+      msg = generateMessage(rospy.get_rostime().to_sec() - self.starttime.to_sec())
       self.sendMessage(msg)
       pathmsg = generateFullTrajMsg()
       self.trajpublisher.publish(pathmsg)
-      targmsg = generateTargetVisMsg(rospy.get_time() - self.starttime)
+      targmsg = generateTargetVisMsg(rospy.get_rostime().to_sec() - self.starttime.to_sec())
       self.targpublisher.publish(targmsg)
 
   def fastCallback(self, event):
-      targmsg = generateTargetVisMsg(rospy.get_time() - self.starttime)
+      targmsg = generateTargetVisMsg(rospy.get_rostime().to_sec() - self.starttime.to_sec())
       self.truthpublisher.publish(targmsg)
         
 

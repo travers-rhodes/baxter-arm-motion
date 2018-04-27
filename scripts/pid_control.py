@@ -9,15 +9,17 @@ from baxter_core_msgs.msg import JointCommand, EndpointState
 from sensor_msgs.msg import JointState 
 from baxter_arm_motion.msg import Tracking 
 from visualization_msgs.msg import Marker
+from target_generation import TargetGeneration
 import baxter_tools
 
 joint_names = [ 'right_e0', 'right_e1', 'right_s0', 'right_s1', 'right_w0', 'right_w1', 'right_w2']
-Kp = 7
+Kp = 5
 Kd = 0.2
-Ki = 4
+Ki = 3 
 
 class BaxterCache:
     def __init__(self):
+      self.t = TargetGeneration()
       self.trackFuture = True#False
       self.listener = rospy.Subscriber("/robot/joint_states", JointState, self.curstate_callback)
       self.desListener = rospy.Subscriber("/follow/target_point", Tracking, self.desired_callback)
@@ -155,11 +157,12 @@ def runExperiment(Kp, Kd, Ki, commandHz):
         # compute the current joint angles
         err = bc.joints - desired_joints 
         # note this needs to be scaled by freq of messages
-        cumulativeJointError += err / commandHz
+        cumulativeJointError += err / 1000 * 2
         err_dot = bc.joints_dot - desired_dot
         # log at 40 hz
-        if it % int(max(1,math.floor(commandHz/40))) == 0:
-          print(it)
+        if it % int(max(1,math.floor(commandHz/30))) == 0:
+          if it % 100 == 0:
+            print(it)
           logger.log([it, rospy.get_rostime().to_sec()] + bc.end_eff_state + bc.truth)
         it += 1
         torques = compute_torque(err, err_dot, cumulativeJointError, Kp, Kd, Ki)
@@ -169,7 +172,7 @@ def runExperiment(Kp, Kd, Ki, commandHz):
 
 def main():
     rospy.init_node('pid_control')
-    commandHz = 1000
+    commandHz = 40
     runExperiment(Kp, Kd, Ki, commandHz)
        
 

@@ -1,11 +1,17 @@
 clear;
 for dfname = 1:6
-    fname = sprintf('data%d-30sps.mat',1);
+    fname = sprintf('data%d-30sps.mat',dfname);
     load(fname);
+    
 
     %create time lags
-    XLAG = lagmatrix(data,[0 1 2]);
-    X = XLAG(3:end,:);
+    %XLAG = lagmatrix(data,[0 1 2]);
+    XLAGnew = zeros(size(data,1), 9);
+    XLAGnew(:,1:3)=data;
+    XLAGnew(2:end,4:6)=data(1:end-1,:);
+    XLAGnew(3:end,7:9)=data(1:end-2,:);
+    
+    X = XLAGnew(3:end,:);
     [N,D] = size(X);
 
     %feature generator function

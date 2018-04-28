@@ -37,10 +37,7 @@ def fit_modelsVARMAX(data,t_test=100,pds = None):
             continue
     return best
 
-
-
-
-if __name__=='__main__':
+def main():
     #generate data from desired model
     data = Ellipse(a=2,b=1).generate_data(N=400)
     #assume first i_seen datapoints have been observed
@@ -54,3 +51,5 @@ if __name__=='__main__':
     preds = model.forecast(100)
 
 
+if __name__ == "__main__":
+    main()

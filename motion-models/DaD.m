@@ -58,7 +58,7 @@ for i=2:N
      err_best = err;
      beta_best = beta;
   end
-  [i,h_train,h_val,err,err_best]
+  %[i,h_train,h_val,err,err_best]
   X_ = fnc(X_);
   XX_ = XX_*(n/(n+size(X_,1))) + X_'*X_/(n+size(X_,1));
   XY_ = XY_*(n/(n+size(X_,1))) + X_'*Y_/(n+size(X_,1));
